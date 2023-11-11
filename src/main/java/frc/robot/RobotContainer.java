@@ -101,6 +101,7 @@ public class RobotContainer {
             new PIDController(AutoConstants.kPYController, 0, 0),
             thetaController,
             m_robotDrive::setModuleStates,
+            true,
             m_robotDrive);
 
     // Reset odometry to the starting pose of the trajectory.
