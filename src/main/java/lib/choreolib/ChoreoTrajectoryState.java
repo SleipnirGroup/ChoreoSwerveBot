@@ -9,6 +9,8 @@ import lombok.Builder;
 
 @Builder
 public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectoryState> {
+  private static final double FIELD_WIDTH_METERS = 16.55445;
+
   public final double timestamp;
   public final double x;
   public final double y;
@@ -50,5 +52,16 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
     return new double[] {
       timestamp, x, y, heading, velocityX, velocityY, angularVelocity,
     };
+  }
+
+  public ChoreoTrajectoryState flipped() {
+    return ChoreoTrajectoryState.builder()
+        .x(FIELD_WIDTH_METERS - this.x)
+        .y(this.y)
+        .heading(((this.heading + (Math.PI / 2)) * -1) - (Math.PI / 2))
+        .velocityX(this.velocityX * -1)
+        .velocityY(this.velocityY)
+        .angularVelocity(this.angularVelocity * -1)
+        .build();
   }
 }

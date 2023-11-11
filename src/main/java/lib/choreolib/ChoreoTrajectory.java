@@ -1,6 +1,8 @@
 package lib.choreolib;
 
 import edu.wpi.first.math.geometry.Pose2d;
+
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 
@@ -52,7 +54,7 @@ public class ChoreoTrajectory {
 
   public ChoreoTrajectoryState sample(double timestamp, boolean mirrorForRedAlliance) {
     var state = sampleInternal(timestamp);
-    return state;
+    return mirrorForRedAlliance ? state.flipped() : state;
   }
 
   public Pose2d getInitialPose() {
@@ -69,5 +71,14 @@ public class ChoreoTrajectory {
 
   public Pose2d[] getPoses() {
     return states.stream().map((state)->state.getPose()).toArray(Pose2d[]::new);
+  }
+
+  public ChoreoTrajectory mirrorred() {
+    var flippedStates = new ArrayList<ChoreoTrajectoryState>();
+    for (var state : states) {
+      flippedStates.add(state.flipped());
+      System.out.println(state.flipped().getPose());
+    }
+    return new ChoreoTrajectory(flippedStates);
   }
 }
