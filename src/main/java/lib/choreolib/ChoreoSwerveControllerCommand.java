@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
-/** Custom PathPlanner version of SwerveControllerCommand */
+/** Custom Choreo version of SwerveControllerCommand */
 public class ChoreoSwerveControllerCommand extends CommandBase {
   private final Timer timer = new Timer();
   private ChoreoTrajectory trajectory;

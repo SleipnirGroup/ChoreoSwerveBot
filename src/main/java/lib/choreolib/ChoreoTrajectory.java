@@ -73,11 +73,10 @@ public class ChoreoTrajectory {
     return states.stream().map((state)->state.getPose()).toArray(Pose2d[]::new);
   }
 
-  public ChoreoTrajectory mirrorred() {
+  public ChoreoTrajectory flipped() {
     var flippedStates = new ArrayList<ChoreoTrajectoryState>();
     for (var state : states) {
       flippedStates.add(state.flipped());
-      System.out.println(state.flipped().getPose());
     }
     return new ChoreoTrajectory(flippedStates);
   }
