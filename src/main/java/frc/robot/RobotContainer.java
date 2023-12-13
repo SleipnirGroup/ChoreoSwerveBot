@@ -11,6 +11,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -41,6 +42,15 @@ public class RobotContainer {
    */
   public RobotContainer() {
     traj = Choreo.getTrajectory("Trajectory");
+
+    m_field.getObject("traj").setPoses(
+        traj.getInitialPose(), traj.getFinalPose()
+    );
+    m_field.getObject("trajPoses").setPoses(
+        traj.getPoses()
+    );
+    
+    SmartDashboard.putData(m_field);
 
     // Configure the button bindings
     configureButtonBindings();
@@ -89,7 +99,7 @@ public class RobotContainer {
         new PIDController(Constants.AutoConstants.kPXController, 0.0, 0.0), // PIDController for field-relative X
                                                                             // translation (input: X error in meters,
                                                                             // output: m/s).
-        new PIDController(Constants.AutoConstants.kPXController, 0.0, 0.0), // PIDController for field-relative Y
+        new PIDController(Constants.AutoConstants.kPYController, 0.0, 0.0), // PIDController for field-relative Y
                                                                             // translation (input: Y error in meters,
                                                                             // output: m/s).
         thetaController, // PID constants to correct for rotation
@@ -99,9 +109,8 @@ public class RobotContainer {
             speeds.vyMetersPerSecond,
             speeds.omegaRadiansPerSecond,
             false),
-        true, // Whether or not to mirror the path based on alliance (this assumes the path is
-              // created for the blue alliance)
-        m_robotDrive // The subsystem(s) to require, typically your drive subsystem (this) only
+        true, // Whether or not to mirror the path based on alliance (this assumes the path is created for the blue alliance)
+        m_robotDrive // The subsystem(s) to require, typically your drive subsystem only
     );
 
     return Commands.sequence(
