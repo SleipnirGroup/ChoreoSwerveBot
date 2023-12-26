@@ -14,8 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OIConstants;
@@ -44,12 +42,12 @@ public class RobotContainer {
     traj = Choreo.getTrajectory("Trajectory");
 
     m_field.getObject("traj").setPoses(
-        traj.getInitialPose(), traj.getFinalPose()
+      traj.getInitialPose(), traj.getFinalPose()
     );
     m_field.getObject("trajPoses").setPoses(
         traj.getPoses()
     );
-    
+
     SmartDashboard.putData(m_field);
 
     // Configure the button bindings
@@ -64,7 +62,7 @@ public class RobotContainer {
             m_driverController.getRightX(),
             false)
         )
-      );
+    );
   }
 
   /**
@@ -76,8 +74,7 @@ public class RobotContainer {
    * passing it to a
    * {@link JoystickButton}.
    */
-  private void configureButtonBindings() {
-  }
+  private void configureButtonBindings() {}
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -85,8 +82,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    var thetaController = new PIDController(
-        AutoConstants.kPThetaController, 0, 0);
+    var thetaController = new PIDController(AutoConstants.kPThetaController, 0, 0);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
     m_robotDrive.resetOdometry(traj.getInitialPose());
@@ -96,13 +92,13 @@ public class RobotContainer {
         m_robotDrive::getPose, // A function that returns the current field-relative pose of the robot: your
                                // wheel or vision odometry
         new PIDController(Constants.AutoConstants.kPXController, 0.0, 0.0), // PIDController for field-relative X
-                                                                            // translation (input: X error in meters,
-                                                                            // output: m/s).
+                                                                                   // translation (input: X error in meters,
+                                                                                   // output: m/s).
         new PIDController(Constants.AutoConstants.kPYController, 0.0, 0.0), // PIDController for field-relative Y
-                                                                            // translation (input: Y error in meters,
-                                                                            // output: m/s).
+                                                                                   // translation (input: Y error in meters,
+                                                                                   // output: m/s).
         thetaController, // PID constants to correct for rotation
-                                                                                // error
+                         // error
         (ChassisSpeeds speeds) -> m_robotDrive.drive( // needs to be robot-relative
             speeds.vxMetersPerSecond,
             speeds.vyMetersPerSecond,
