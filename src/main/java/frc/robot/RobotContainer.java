@@ -45,7 +45,7 @@ public class RobotContainer {
       traj.getInitialPose(), traj.getFinalPose()
     );
     m_field.getObject("trajPoses").setPoses(
-        traj.getPoses()
+      traj.getPoses()
     );
 
     SmartDashboard.putData(m_field);
