@@ -113,9 +113,9 @@ public class RobotContainer {
     );
 
     return Commands.sequence(
-      Commands.runOnce(() -> m_robotDrive.resetOdometry(traj.getInitialPose())),
-      swerveCommand,
-      new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, false))
+        Commands.runOnce(() -> m_robotDrive.resetOdometry(traj.getInitialPose())),
+        swerveCommand,
+        m_robotDrive.run(() -> m_robotDrive.drive(0, 0, 0, false))
     );
   }
 
