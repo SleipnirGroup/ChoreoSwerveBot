@@ -4,30 +4,20 @@
 
 package frc.robot;
 
+import com.choreo.lib.Choreo;
+import com.choreo.lib.ChoreoTrajectory;
+
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.OIConstants;
-import frc.robot.subsystems.DriveSubsystem;
-import lib.choreolib.ChoreoSwerveControllerCommand;
-import lib.choreolib.ChoreoTrajectory;
-import lib.choreolib.TrajectoryManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import java.util.List;
+import frc.robot.Constants.AutoConstants;
+import frc.robot.Constants.OIConstants;
+import frc.robot.subsystems.DriveSubsystem;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -42,18 +32,24 @@ public class RobotContainer {
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
   Field2d m_field = new Field2d();
+
   ChoreoTrajectory traj;
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+
+  /**
+   * The container for the robot. Contains subsystems, OI devices, and commands.
+   */
   public RobotContainer() {
-    TrajectoryManager.getInstance().LoadTrajectories();
-    traj = TrajectoryManager.getInstance().getTrajectory("New Path.json");
+    traj = Choreo.getTrajectory("Trajectory");
+
     m_field.getObject("traj").setPoses(
-        traj.getInitialPose(), traj.getFinalPose()
+      traj.getInitialPose(), traj.getFinalPose()
     );
     m_field.getObject("trajPoses").setPoses(
-        traj.getPoses()
+      traj.getPoses()
     );
+
     SmartDashboard.putData(m_field);
+
     // Configure the button bindings
     configureButtonBindings();
 
@@ -61,20 +57,21 @@ public class RobotContainer {
     m_robotDrive.setDefaultCommand(
         // The left stick controls translation of the robot.
         // Turning is controlled by the X axis of the right stick.
-        new RunCommand(
-            () ->
-                m_robotDrive.drive(
-                    m_driverController.getLeftY(),
-                    m_driverController.getLeftX(),
-                    m_driverController.getRightX(),
-                    false),
-            m_robotDrive));
+        m_robotDrive.run(() -> m_robotDrive.drive(m_driverController.getLeftY(),
+            m_driverController.getLeftX(),
+            m_driverController.getRightX(),
+            false)
+        )
+    );
   }
 
   /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link edu.wpi.first.wpilibj.GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then calling passing it to a
+   * Use this method to define your button->command mappings. Buttons can be
+   * created by
+   * instantiating a {@link edu.wpi.first.wpilibj.GenericHID} or one of its
+   * subclasses ({@link
+   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then calling
+   * passing it to a
    * {@link JoystickButton}.
    */
   private void configureButtonBindings() {}
@@ -85,33 +82,36 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    var thetaController =
-        new PIDController(
-            AutoConstants.kPThetaController, 0, 0);
+    var thetaController = new PIDController(AutoConstants.kPThetaController, 0, 0);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    ChoreoSwerveControllerCommand swerveControllerCommand =
-        new ChoreoSwerveControllerCommand(
-            TrajectoryManager.getInstance().getTrajectory("New Path.json"),
-            m_robotDrive::getPose, // Functional interface to feed supplier
-            DriveConstants.kDriveKinematics,
-
-            // Position controllers
-            new PIDController(AutoConstants.kPXController, 0, 0),
-            new PIDController(AutoConstants.kPYController, 0, 0),
-            thetaController,
-            m_robotDrive::setModuleStates,
-            true,
-            m_robotDrive);
-
-    // Reset odometry to the starting pose of the trajectory.
     m_robotDrive.resetOdometry(traj.getInitialPose());
 
-    // Run path following command, then stop at the end.
+    Command swerveCommand = Choreo.choreoSwerveCommand(
+        traj, // Choreo trajectory from above
+        m_robotDrive::getPose, // A function that returns the current field-relative pose of the robot: your
+                               // wheel or vision odometry
+        new PIDController(Constants.AutoConstants.kPXController, 0.0, 0.0), // PIDController for field-relative X
+                                                                                   // translation (input: X error in meters,
+                                                                                   // output: m/s).
+        new PIDController(Constants.AutoConstants.kPYController, 0.0, 0.0), // PIDController for field-relative Y
+                                                                                   // translation (input: Y error in meters,
+                                                                                   // output: m/s).
+        thetaController, // PID constants to correct for rotation
+                         // error
+        (ChassisSpeeds speeds) -> m_robotDrive.drive( // needs to be robot-relative
+            speeds.vxMetersPerSecond,
+            speeds.vyMetersPerSecond,
+            speeds.omegaRadiansPerSecond,
+            false),
+        true, // Whether or not to mirror the path based on alliance (this assumes the path is created for the blue alliance)
+        m_robotDrive // The subsystem(s) to require, typically your drive subsystem only
+    );
+
     return Commands.sequence(
-        Commands.runOnce(()->m_robotDrive.resetOdometry(traj.getInitialPose())),
-        swerveControllerCommand,
-        Commands.runOnce(() -> m_robotDrive.drive(0, 0, 0, false))
+        Commands.runOnce(() -> m_robotDrive.resetOdometry(traj.getInitialPose())),
+        swerveCommand,
+        m_robotDrive.run(() -> m_robotDrive.drive(0, 0, 0, false))
     );
   }
 
