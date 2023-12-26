@@ -103,7 +103,7 @@ public class RobotContainer {
                                                                             // output: m/s).
         thetaController, // PID constants to correct for rotation
                                                                                 // error
-        (ChassisSpeeds speeds) -> m_robotDrive.drive(
+        (ChassisSpeeds speeds) -> m_robotDrive.drive( // needs to be robot-relative
             speeds.vxMetersPerSecond,
             speeds.vyMetersPerSecond,
             speeds.omegaRadiansPerSecond,
