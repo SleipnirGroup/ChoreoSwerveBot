@@ -104,7 +104,7 @@ public class RobotContainer {
             speeds.vyMetersPerSecond,
             speeds.omegaRadiansPerSecond,
             false),
-        true, // Whether or not to mirror the path based on alliance (this assumes the path is created for the blue alliance)
+        () -> true, // Whether or not to mirror the path based on alliance (this assumes the path is created for the blue alliance)
         m_robotDrive // The subsystem(s) to require, typically your drive subsystem only
     );
 
